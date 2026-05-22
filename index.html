@@ -9,6 +9,14 @@
     <title>PDFFlow — All your PDFs. None of our business.</title>
   </head>
   <body>
+    <script>
+      try {
+        var s = localStorage.getItem('pdfflow-app');
+        if (s && JSON.parse(s).state.theme === 'light') {
+          document.documentElement.classList.add('light');
+        }
+      } catch (_) {}
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
