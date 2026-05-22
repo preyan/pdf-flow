@@ -35,6 +35,11 @@ export function downloadBlob(data: Uint8Array | Blob, filename: string, type = '
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
+export function firstNum(value: number | readonly number[], fallback: number): number {
+  if (typeof value === 'number') return value
+  return value[0] ?? fallback
+}
+
 export function parsePageRanges(input: string, totalPages: number): number[] {
   const result = new Set<number>()
   for (const part of input.split(',')) {
