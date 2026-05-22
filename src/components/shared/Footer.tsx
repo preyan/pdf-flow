@@ -3,8 +3,8 @@ import { Lock, Scale } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer className="px-6 sm:px-7 py-5 border-t border-border text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
-      <Lock size={12} aria-hidden="true" />
+    <footer className="px-7 h-12 border-t border-border text-[11px] text-muted-2 flex items-center gap-2 flex-wrap">
+      <Lock size={11} aria-hidden="true" />
       <a
         href="https://github.com/preyan/pdf-flow"
         target="_blank"
@@ -14,7 +14,7 @@ export function Footer() {
         Audit code
       </a>
       <span aria-hidden="true">·</span>
-      <Scale size={12} aria-hidden="true" />
+      <Scale size={11} aria-hidden="true" />
       <span>MIT</span>
       <span aria-hidden="true">·</span>
       <span>

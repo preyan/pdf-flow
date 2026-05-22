@@ -12,13 +12,13 @@ const PRIVACY_ROWS: Array<[label: string, value: string]> = [
 
 export default function About() {
   return (
-    <div className="px-6 sm:px-7 py-10 sm:py-14 max-w-3xl mx-auto w-full">
-      <section className="mb-10">
-        <p className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground mb-3">About</p>
+    <div className="px-7 py-10 max-w-3xl mx-auto w-full">
+      <section className="mb-8">
+        <p className="text-[11px] uppercase tracking-[0.04em] text-muted-2 mb-3">About</p>
         <h1 className="text-3xl sm:text-4xl font-medium tracking-tight leading-[1.1]">
           A privacy-first PDF toolbox.
           <br />
-          <span className="text-muted-foreground">Built in the open. Kept that way.</span>
+          <span className="text-muted-2">Built in the open. Kept that way.</span>
         </h1>
       </section>
 
@@ -42,7 +42,7 @@ export default function About() {
         <dl className="divide-y divide-border">
           {PRIVACY_ROWS.map(([label, value]) => (
             <div key={label} className="grid grid-cols-[140px_1fr] sm:grid-cols-[180px_1fr] py-2.5 gap-3">
-              <dt className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground self-center">
+              <dt className="text-[11px] uppercase tracking-[0.04em] text-muted-2 self-center">
                 {label}
               </dt>
               <dd className="text-sm">{value}</dd>
@@ -63,8 +63,8 @@ export default function About() {
 
 function Card({ eyebrow, children }: { eyebrow: string; children: React.ReactNode }) {
   return (
-    <section className="bg-card border border-border rounded-xl p-5 sm:p-6 mb-3">
-      <p className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground mb-4">{eyebrow}</p>
+    <section className="bg-card border border-border rounded-xl p-5 mb-3">
+      <p className="text-[11px] uppercase tracking-[0.04em] text-muted-2 mb-4">{eyebrow}</p>
       {children}
     </section>
   )
@@ -73,13 +73,13 @@ function Card({ eyebrow, children }: { eyebrow: string; children: React.ReactNod
 function CalloutCard({ eyebrow, children }: { eyebrow: string; children: React.ReactNode }) {
   return (
     <section
-      className="border border-border rounded-xl p-5 sm:p-6 mb-3"
+      className="border border-border rounded-xl p-5 mb-3"
       style={{
         background:
           'linear-gradient(to right, rgba(99, 124, 255, 0.06), transparent)',
       }}
     >
-      <p className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground mb-3">{eyebrow}</p>
+      <p className="text-[11px] uppercase tracking-[0.04em] text-muted-2 mb-3">{eyebrow}</p>
       {children}
     </section>
   )

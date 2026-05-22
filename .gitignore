@@ -43,3 +43,7 @@ test-results
 
 # Temporary stash for retroactive commits
 .step2-stash/
+
+# Local screenshot generation
+.screenshots/
+shoot.mjs

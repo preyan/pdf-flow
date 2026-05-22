@@ -5,6 +5,7 @@ import { Workspace } from '@/components/shared/Workspace'
 import { DropZone } from '@/components/shared/DropZone'
 import { FileCard } from '@/components/shared/FileCard'
 import { PrimaryButton } from '@/components/shared/PrimaryButton'
+import { Eyebrow } from '@/components/shared/Eyebrow'
 import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { addWatermark, type WatermarkPosition } from '@/services/pdfService'
@@ -27,13 +28,11 @@ export default function WatermarkTool() {
   const [firstPageOnly, setFirstPageOnly] = useState(false)
   const [busy, setBusy] = useState(false)
   const preview = usePdfPreview(file)
+  const isEmpty = !file
 
   async function handleApply() {
     if (!file) return
-    if (!text.trim()) {
-      toast.error('Enter watermark text')
-      return
-    }
+    if (!text.trim()) { toast.error('Enter watermark text'); return }
     setBusy(true)
     try {
       const bytes = await addWatermark(file, { text, position, opacity, size, rotate45, firstPageOnly })
@@ -47,35 +46,30 @@ export default function WatermarkTool() {
     }
   }
 
-  const previewNode = !file ? (
+  const previewNode = isEmpty ? (
     <DropZone onFiles={(fs) => setFile(fs[0])} label="Drop a PDF to watermark" />
   ) : (
-    <div>
-      <div className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground mb-3">
-        Preview · {preview?.pageCount ?? '…'} page{preview?.pageCount === 1 ? '' : 's'} total
-      </div>
-      <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {preview?.thumbnails.map((src, i) => (
-          <li key={i} className="rounded-md border border-border p-1.5 relative overflow-hidden">
-            <img src={src} alt={`Page ${i + 1}`} className="w-full h-auto rounded-sm" />
-            {(!firstPageOnly || i === 0) && (
-              <span
-                className="absolute pointer-events-none font-semibold text-primary"
-                style={{
-                  ...positionStyle(position),
-                  opacity: opacity / 100,
-                  transform: `${positionTransform(position)} rotate(${rotate45 ? -45 : 0}deg)`,
-                  fontSize: `${size * 0.18}px`,
-                }}
-              >
-                {text}
-              </span>
-            )}
-            <div className="text-[11px] text-muted-foreground mt-1 text-center">{i + 1}</div>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+      {preview?.thumbnails.map((src, i) => (
+        <li key={i} className="rounded-md border border-border p-1.5 relative overflow-hidden">
+          <img src={src} alt={`Page ${i + 1}`} className="w-full h-auto rounded-sm" />
+          {(!firstPageOnly || i === 0) && (
+            <span
+              className="absolute pointer-events-none font-semibold text-primary"
+              style={{
+                ...positionStyle(position),
+                opacity: opacity / 100,
+                transform: `${positionTransform(position)} rotate(${rotate45 ? -45 : 0}deg)`,
+                fontSize: `${size * 0.18}px`,
+              }}
+            >
+              {text}
+            </span>
+          )}
+          <div className="text-[11px] text-muted-2 mt-1 text-center">{i + 1}</div>
+        </li>
+      ))}
+    </ul>
   )
 
   const panel = (
@@ -85,95 +79,96 @@ export default function WatermarkTool() {
           <Stamp size={14} className="text-primary" aria-hidden="true" />
           <span className="text-sm font-medium">Watermark</span>
         </div>
-        <span className="text-[11px] text-muted-foreground">{file ? '1 file' : '0 files'}</span>
+        <span className="text-[11px] text-muted-2">{file ? '1 file' : '0 files'}</span>
       </div>
 
-      {file && (
-        <>
-          <FileCard file={file} pageCount={preview?.pageCount} onRemove={() => setFile(null)} />
-
-          <div className="space-y-1.5">
-            <label htmlFor="wm-text" className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
-              Text
-            </label>
-            <input
-              id="wm-text"
-              type="text"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="CONFIDENTIAL"
-              className="w-full h-10 px-3 rounded-md bg-card border border-border text-sm focus:outline-none focus:border-primary"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground">Position</div>
-            <div className="grid grid-cols-3 gap-1 rounded-md border border-border bg-card p-2 w-fit">
-              {POSITIONS.map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPosition(p)}
-                  aria-label={p}
-                  className={[
-                    'h-8 w-8 rounded grid place-items-center',
-                    p === position ? 'bg-primary' : 'hover:bg-accent',
-                  ].join(' ')}
-                >
-                  <span
-                    className={[
-                      'block h-1.5 w-1.5 rounded-full',
-                      p === position ? 'bg-primary-foreground' : 'bg-muted-foreground',
-                    ].join(' ')}
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground">Opacity</label>
-              <span className="text-[11px] tabular-nums">{opacity}</span>
-            </div>
-            <Slider value={[opacity]} min={0} max={100} step={1} onValueChange={(v) => setOpacity(firstNum(v, opacity))} />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground">Size (pt)</label>
-              <span className="text-[11px] tabular-nums">{size}</span>
-            </div>
-            <Slider value={[size]} min={12} max={96} step={1} onValueChange={(v) => setSize(firstNum(v, size))} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <div className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground mb-1.5">Rotation</div>
-              <Tabs value={rotate45 ? '45' : '0'} onValueChange={(v) => setRotate45(v === '45')}>
-                <TabsList className="w-full">
-                  <TabsTrigger value="0" className="flex-1">0°</TabsTrigger>
-                  <TabsTrigger value="45" className="flex-1">45°</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-            <div>
-              <div className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground mb-1.5">Apply</div>
-              <Tabs value={firstPageOnly ? 'first' : 'all'} onValueChange={(v) => setFirstPageOnly(v === 'first')}>
-                <TabsList className="w-full">
-                  <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
-                  <TabsTrigger value="first" className="flex-1">First</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-          </div>
-        </>
+      <Eyebrow>File</Eyebrow>
+      {file ? (
+        <FileCard file={file} pageCount={preview?.pageCount} onRemove={() => setFile(null)} />
+      ) : (
+        <div className="rounded-md border border-dashed border-border p-3 text-[11px] text-muted-2">No file selected</div>
       )}
 
-      <div className="mt-auto">
+      <div className="space-y-1.5">
+        <Eyebrow>Text</Eyebrow>
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="CONFIDENTIAL"
+          disabled={isEmpty}
+          className="w-full h-9 px-3 rounded-md bg-card border border-border text-sm focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Eyebrow>Position</Eyebrow>
+        <div className="grid grid-cols-3 gap-1 rounded-md border border-border bg-card p-2 w-fit">
+          {POSITIONS.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPosition(p)}
+              disabled={isEmpty}
+              aria-label={p}
+              className={[
+                'h-7 w-7 rounded grid place-items-center transition-colors',
+                p === position ? 'bg-primary' : 'hover:bg-surface-hover',
+                isEmpty ? 'opacity-50 cursor-not-allowed' : '',
+              ].join(' ')}
+            >
+              <span
+                className={[
+                  'block h-1.5 w-1.5 rounded-full',
+                  p === position ? 'bg-primary-foreground' : 'bg-muted-2',
+                ].join(' ')}
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Eyebrow>Opacity</Eyebrow>
+          <span className="text-[11px] tabular-nums">{opacity}</span>
+        </div>
+        <Slider value={[opacity]} min={0} max={100} step={1} disabled={isEmpty} onValueChange={(v) => setOpacity(firstNum(v, opacity))} />
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Eyebrow>Size (pt)</Eyebrow>
+          <span className="text-[11px] tabular-nums">{size}</span>
+        </div>
+        <Slider value={[size]} min={12} max={96} step={1} disabled={isEmpty} onValueChange={(v) => setSize(firstNum(v, size))} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Eyebrow className="mb-1.5">Rotation</Eyebrow>
+          <Tabs value={rotate45 ? '45' : '0'} onValueChange={(v) => setRotate45(v === '45')}>
+            <TabsList className="w-full">
+              <TabsTrigger value="0" className="flex-1" disabled={isEmpty}>0°</TabsTrigger>
+              <TabsTrigger value="45" className="flex-1" disabled={isEmpty}>45°</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+        <div>
+          <Eyebrow className="mb-1.5">Apply</Eyebrow>
+          <Tabs value={firstPageOnly ? 'first' : 'all'} onValueChange={(v) => setFirstPageOnly(v === 'first')}>
+            <TabsList className="w-full">
+              <TabsTrigger value="all" className="flex-1" disabled={isEmpty}>All</TabsTrigger>
+              <TabsTrigger value="first" className="flex-1" disabled={isEmpty}>First</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </div>
+
+      <div className="mt-auto pt-2">
         <PrimaryButton
           icon={<Check size={14} aria-hidden="true" />}
-          disabled={busy || !file}
+          disabled={busy || isEmpty}
           onClick={handleApply}
           data-testid="watermark-cta"
         >
@@ -183,7 +178,15 @@ export default function WatermarkTool() {
     </>
   )
 
-  return <Workspace icon={Stamp} title="Watermark" preview={previewNode} panel={panel} />
+  return (
+    <Workspace
+      icon={Stamp}
+      title="Watermark"
+      previewEyebrow={isEmpty ? 'Preview · drop a file to begin' : `Preview · ${preview?.pageCount ?? '…'} page${preview?.pageCount === 1 ? '' : 's'} total`}
+      preview={previewNode}
+      panel={panel}
+    />
+  )
 }
 
 function positionStyle(p: WatermarkPosition): React.CSSProperties {

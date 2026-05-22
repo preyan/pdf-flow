@@ -7,9 +7,16 @@ type Props = {
   multiple?: boolean
   onFiles: (files: File[]) => void
   label?: string
+  /** When true (default), centers a compact card occupying ~40% of the container. */
+  compact?: boolean
 }
 
-export function DropZone({ multiple = false, onFiles, label = 'Drop a PDF here, or click to choose' }: Props) {
+export function DropZone({
+  multiple = false,
+  onFiles,
+  label = 'Drop a PDF here, or click to choose',
+  compact = true,
+}: Props) {
   const ref = useRef<HTMLInputElement>(null)
   const [over, setOver] = useState(false)
 
@@ -30,7 +37,7 @@ export function DropZone({ multiple = false, onFiles, label = 'Drop a PDF here, 
     handleFiles(e.dataTransfer.files)
   }
 
-  return (
+  const card = (
     <div
       onDragOver={(e) => { e.preventDefault(); setOver(true) }}
       onDragLeave={() => setOver(false)}
@@ -42,14 +49,15 @@ export function DropZone({ multiple = false, onFiles, label = 'Drop a PDF here, 
       aria-label={label}
       className={[
         'cursor-pointer rounded-xl border border-dashed transition-colors',
-        'flex flex-col items-center justify-center gap-3 p-10 sm:p-14 text-center',
-        over ? 'border-primary bg-accent' : 'border-border hover:border-primary/40 hover:bg-accent',
+        'flex flex-col items-center justify-center gap-2 p-6 text-center',
+        compact ? 'w-full max-w-sm' : 'w-full',
+        over ? 'border-primary bg-surface-hover' : 'border-border hover:border-primary/40 hover:bg-surface-hover',
       ].join(' ')}
     >
-      <Upload size={28} className="text-muted-foreground" aria-hidden="true" />
+      <Upload size={22} className="text-muted-foreground" aria-hidden="true" />
       <div>
         <div className="text-sm font-medium">{label}</div>
-        <div className="text-[11px] text-muted-foreground mt-1">PDF only · max 10 MB{multiple ? ' each' : ''}</div>
+        <div className="text-[11px] text-muted-2 mt-1">PDF only · max 10 MB{multiple ? ' each' : ''}</div>
       </div>
       <input
         ref={ref}
@@ -62,4 +70,9 @@ export function DropZone({ multiple = false, onFiles, label = 'Drop a PDF here, 
       />
     </div>
   )
+
+  if (compact) {
+    return <div className="min-h-[280px] grid place-items-center">{card}</div>
+  }
+  return card
 }

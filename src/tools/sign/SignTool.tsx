@@ -5,18 +5,14 @@ import { Workspace } from '@/components/shared/Workspace'
 import { DropZone } from '@/components/shared/DropZone'
 import { FileCard } from '@/components/shared/FileCard'
 import { PrimaryButton } from '@/components/shared/PrimaryButton'
+import { Eyebrow } from '@/components/shared/Eyebrow'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { placeSignature } from '@/services/pdfService'
 import { downloadBlob } from '@/lib/fileUtils'
 import { usePdfPreview } from '@/hooks/usePdfPreview'
 
 type Mode = 'draw' | 'type'
-
-type Target = {
-  pageIndex: number
-  xRatio: number
-  yRatio: number
-}
+type Target = { pageIndex: number; xRatio: number; yRatio: number }
 
 export default function SignTool() {
   const [file, setFile] = useState<File | null>(null)
@@ -27,9 +23,10 @@ export default function SignTool() {
   const padRef = useRef<HTMLCanvasElement | null>(null)
   const padInstance = useRef<{ clear: () => void; isEmpty: () => boolean; toDataURL: (t?: string) => string } | null>(null)
   const preview = usePdfPreview(file)
+  const isEmpty = !file
 
   useEffect(() => {
-    if (mode !== 'draw' || !padRef.current) return
+    if (mode !== 'draw' || !padRef.current || isEmpty) return
     let alive = true
     void (async () => {
       const { default: SignaturePad } = await import('signature_pad')
@@ -41,7 +38,7 @@ export default function SignTool() {
       padInstance.current = inst
     })()
     return () => { alive = false; padInstance.current = null }
-  }, [mode, file])
+  }, [mode, file, isEmpty])
 
   function clearPad() {
     padInstance.current?.clear()
@@ -77,10 +74,7 @@ export default function SignTool() {
       return
     }
     const dataUrl = getSignatureDataUrl()
-    if (!dataUrl) {
-      toast.error('Provide a signature first')
-      return
-    }
+    if (!dataUrl) { toast.error('Provide a signature first'); return }
     setBusy(true)
     try {
       const bytes = await placeSignature(file, {
@@ -107,41 +101,36 @@ export default function SignTool() {
     setTarget({ pageIndex, xRatio: clamp01(xRatio), yRatio: clamp01(yRatio) })
   }
 
-  const previewNode = !file ? (
+  const previewNode = isEmpty ? (
     <DropZone onFiles={(fs) => setFile(fs[0])} label="Drop a PDF to sign" />
   ) : (
-    <div>
-      <div className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground mb-3">
-        Preview · click a page to place the signature
-      </div>
-      <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        {preview?.thumbnails.map((src, i) => {
-          const isTargetPage = target?.pageIndex === i
-          return (
-            <li key={i}>
-              <button
-                type="button"
-                onClick={(e) => handleThumbClick(e, i)}
-                className="group w-full rounded-md border border-border p-1.5 relative hover:border-primary/40 transition-colors cursor-crosshair"
-              >
-                <img src={src} alt={`Page ${i + 1}`} className="w-full h-auto rounded-sm pointer-events-none" />
-                {isTargetPage && target && (
-                  <span
-                    className="absolute h-10 w-20 border-[1.5px] border-dashed border-primary rounded bg-primary/10 pointer-events-none"
-                    style={{
-                      left: `${target.xRatio * 100}%`,
-                      top: `${target.yRatio * 100}%`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                  />
-                )}
-                <div className="text-[11px] text-muted-foreground mt-1 text-center">{i + 1}</div>
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-    </div>
+    <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+      {preview?.thumbnails.map((src, i) => {
+        const isTargetPage = target?.pageIndex === i
+        return (
+          <li key={i}>
+            <button
+              type="button"
+              onClick={(e) => handleThumbClick(e, i)}
+              className="group w-full rounded-md border border-border p-1.5 relative hover:border-primary/40 transition-colors cursor-crosshair"
+            >
+              <img src={src} alt={`Page ${i + 1}`} className="w-full h-auto rounded-sm pointer-events-none" />
+              {isTargetPage && target && (
+                <span
+                  className="absolute h-10 w-20 border-[1.5px] border-dashed border-primary rounded bg-primary/10 pointer-events-none"
+                  style={{
+                    left: `${target.xRatio * 100}%`,
+                    top: `${target.yRatio * 100}%`,
+                    transform: 'translate(-50%, -50%)',
+                  }}
+                />
+              )}
+              <div className="text-[11px] text-muted-2 mt-1 text-center">{i + 1}</div>
+            </button>
+          </li>
+        )
+      })}
+    </ul>
   )
 
   const panel = (
@@ -151,81 +140,97 @@ export default function SignTool() {
           <Signature size={14} className="text-primary" aria-hidden="true" />
           <span className="text-sm font-medium">Sign</span>
         </div>
-        <span className="text-[11px] text-muted-foreground">{file ? '1 file' : '0 files'}</span>
+        <span className="text-[11px] text-muted-2">{file ? '1 file' : '0 files'}</span>
       </div>
 
-      {file && (
-        <>
-          <FileCard file={file} pageCount={preview?.pageCount} onRemove={() => { setFile(null); setTarget(null) }} />
-
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.04em] text-muted-foreground mb-2">Your signature</div>
-            <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
-              <TabsList className="w-full mb-3">
-                <TabsTrigger value="draw" className="flex-1">Draw</TabsTrigger>
-                <TabsTrigger value="type" className="flex-1">Type</TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            {mode === 'draw' ? (
-              <div className="relative">
-                <canvas
-                  ref={padRef}
-                  width={320}
-                  height={140}
-                  className="w-full h-[140px] rounded-md border border-border bg-white touch-none"
-                />
-                <button
-                  type="button"
-                  onClick={clearPad}
-                  aria-label="Clear signature"
-                  className="absolute top-2 right-2 h-8 w-8 grid place-items-center rounded-md bg-card border border-border hover:bg-accent"
-                >
-                  <RotateCcw size={14} />
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={typedName}
-                  onChange={(e) => setTypedName(e.target.value)}
-                  placeholder="Your name"
-                  className="w-full h-10 px-3 rounded-md bg-card border border-border text-sm focus:outline-none focus:border-primary"
-                />
-                {typedName && (
-                  <div
-                    className="h-16 rounded-md border border-border bg-white grid place-items-center text-2xl"
-                    style={{ fontFamily: '"Brush Script MT", "Lucida Handwriting", cursive', color: '#141414' }}
-                  >
-                    {typedName}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="text-[11px] text-muted-foreground">
-            {target ? `Placed on page ${target.pageIndex + 1}` : 'Click a page to place the signature'}
-          </div>
-        </>
+      <Eyebrow>File</Eyebrow>
+      {file ? (
+        <FileCard file={file} pageCount={preview?.pageCount} onRemove={() => { setFile(null); setTarget(null) }} />
+      ) : (
+        <div className="rounded-md border border-dashed border-border p-3 text-[11px] text-muted-2">No file selected</div>
       )}
 
-      <div className="mt-auto">
+      <Eyebrow>Your signature</Eyebrow>
+      <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
+        <TabsList className="w-full">
+          <TabsTrigger value="draw" className="flex-1" disabled={isEmpty}>Draw</TabsTrigger>
+          <TabsTrigger value="type" className="flex-1" disabled={isEmpty}>Type</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {mode === 'draw' ? (
+        <div className="relative">
+          <canvas
+            ref={padRef}
+            width={320}
+            height={120}
+            className={[
+              'w-full h-[120px] rounded-md border border-border bg-white touch-none',
+              isEmpty ? 'opacity-50 pointer-events-none' : '',
+            ].join(' ')}
+          />
+          <button
+            type="button"
+            onClick={clearPad}
+            disabled={isEmpty}
+            aria-label="Clear signature"
+            className="absolute top-2 right-2 h-7 w-7 grid place-items-center rounded-md bg-card border border-border hover:bg-surface-hover disabled:opacity-50"
+          >
+            <RotateCcw size={12} />
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <input
+            type="text"
+            value={typedName}
+            onChange={(e) => setTypedName(e.target.value)}
+            placeholder="Your name"
+            disabled={isEmpty}
+            className="w-full h-9 px-3 rounded-md bg-card border border-border text-sm focus:outline-none focus:border-primary disabled:opacity-50"
+          />
+          {typedName && !isEmpty && (
+            <div
+              className="h-14 rounded-md border border-border bg-white grid place-items-center text-2xl"
+              style={{ fontFamily: '"Brush Script MT", "Lucida Handwriting", cursive', color: '#141414' }}
+            >
+              {typedName}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="text-[11px] text-muted-2">
+        {isEmpty
+          ? 'Load a PDF, then click a page to place'
+          : target
+            ? `Placed on page ${target.pageIndex + 1}`
+            : 'Click a page to place the signature'}
+      </div>
+
+      <div className="mt-auto pt-2">
         <PrimaryButton
           icon={<Check size={14} aria-hidden="true" />}
-          disabled={busy || !file || !target}
+          disabled={busy || isEmpty || !target}
           onClick={handlePlace}
           data-testid="sign-cta"
         >
           {busy ? 'Placing…' : 'Place signature'}
         </PrimaryButton>
-        <div className="text-[11px] text-muted-foreground mt-2 text-center">🔒 Stored on device</div>
+        <div className="text-[11px] text-muted-2 mt-2 text-center">🔒 Stored on device</div>
       </div>
     </>
   )
 
-  return <Workspace icon={Signature} title="Sign" preview={previewNode} panel={panel} />
+  return (
+    <Workspace
+      icon={Signature}
+      title="Sign"
+      previewEyebrow={isEmpty ? 'Preview · drop a file to begin' : 'Preview · click a page to place'}
+      preview={previewNode}
+      panel={panel}
+    />
+  )
 }
 
 function clamp01(n: number): number {

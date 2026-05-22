@@ -5,6 +5,7 @@ import { Workspace } from '@/components/shared/Workspace'
 import { DropZone } from '@/components/shared/DropZone'
 import { FileCard } from '@/components/shared/FileCard'
 import { PrimaryButton } from '@/components/shared/PrimaryButton'
+import { Eyebrow } from '@/components/shared/Eyebrow'
 import { mergePdfs } from '@/services/pdfService'
 import { downloadBlob, formatBytes, validatePdf } from '@/lib/fileUtils'
 
@@ -63,11 +64,12 @@ export default function MergeTool() {
   }
 
   const totalSize = files.reduce((sum, f) => sum + f.size, 0)
+  const isEmpty = files.length === 0
 
-  const preview = files.length === 0 ? (
-    <DropZone multiple onFiles={addFiles} label="Drop PDFs to merge, or click to choose" />
+  const preview = isEmpty ? (
+    <DropZone multiple onFiles={addFiles} label="Drop PDFs to merge" />
   ) : (
-    <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+    <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
       {files.map((file, i) => (
         <li
           key={`${file.name}-${i}`}
@@ -92,8 +94,10 @@ export default function MergeTool() {
           <Combine size={14} className="text-primary" aria-hidden="true" />
           <span className="text-sm font-medium">Merge</span>
         </div>
-        <span className="text-[11px] text-muted-foreground">{files.length} file{files.length === 1 ? '' : 's'}</span>
+        <span className="text-[11px] text-muted-2">{files.length} file{files.length === 1 ? '' : 's'}</span>
       </div>
+
+      <Eyebrow>Files</Eyebrow>
 
       <ul className="flex flex-col gap-2">
         {files.map((file, i) => (
@@ -105,21 +109,19 @@ export default function MergeTool() {
           <button
             type="button"
             onClick={pickMore}
-            className="w-full h-11 rounded-md border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-accent inline-flex items-center justify-center gap-2 text-sm"
+            className="w-full h-10 rounded-md border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-surface-hover inline-flex items-center justify-center gap-2 text-sm"
           >
-            <Plus size={14} aria-hidden="true" />
+            <Plus size={12} aria-hidden="true" />
             Add file
           </button>
         </li>
       </ul>
 
-      {files.length > 0 && (
-        <div className="text-[11px] text-muted-foreground border-t border-border pt-3">
-          Total: {formatBytes(totalSize)}
-        </div>
-      )}
+      <div className="text-[11px] text-muted-2 border-t border-divider pt-2.5">
+        {isEmpty ? 'Total: 0 B' : `Total: ${formatBytes(totalSize)}`}
+      </div>
 
-      <div className="mt-auto">
+      <div className="mt-auto pt-2">
         <PrimaryButton
           icon={<Download size={14} aria-hidden="true" />}
           disabled={busy || files.length < 2}
@@ -132,5 +134,13 @@ export default function MergeTool() {
     </>
   )
 
-  return <Workspace icon={Combine} title="Merge" preview={preview} panel={panel} />
+  return (
+    <Workspace
+      icon={Combine}
+      title="Merge"
+      previewEyebrow={isEmpty ? 'Preview · drop files to begin' : `Preview · ${files.length} file${files.length === 1 ? '' : 's'}`}
+      preview={preview}
+      panel={panel}
+    />
+  )
 }
