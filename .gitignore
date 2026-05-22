@@ -1,0 +1,45 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+node_modules
+dist
+dist-ssr
+coverage
+
+# Tests
+playwright-report
+test-results
+.playwright
+
+# Env / local
+*.local
+.env
+.env.*
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Caches
+.eslintcache
+.cache
+
+# Local Claude config (per-user)
+.claude/
+
+# Temporary stash for retroactive commits
+.step2-stash/
