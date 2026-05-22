@@ -24,7 +24,7 @@ export function Footer() {
         </Link>
       </span>
       <span aria-hidden="true">·</span>
-      <span>v1.0</span>
+      <span>v{__APP_VERSION__}</span>
     </footer>
   )
 }

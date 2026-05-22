@@ -6,6 +6,7 @@
 
 ### All your PDFs. None of our business.
 
+[![Version](https://img.shields.io/github/package-json/v/preyan/pdf-flow?style=flat-square&label=version&color=637cff)](https://github.com/preyan/pdf-flow/releases)
 [![Deploy](https://github.com/preyan/pdf-flow/actions/workflows/deploy.yml/badge.svg)](https://github.com/preyan/pdf-flow/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2F2F2F.svg?style=flat-square)](./LICENSE)
 [![PWA Ready](https://img.shields.io/badge/PWA-ready-5A0FC8.svg?style=flat-square&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
