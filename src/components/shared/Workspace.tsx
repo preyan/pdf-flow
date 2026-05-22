@@ -34,11 +34,11 @@ export function Workspace({ icon: Icon, title, preview, panel }: Props) {
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_320px] min-h-0">
-        <div className="p-4 sm:p-6 border-b md:border-b-0 md:border-r border-border overflow-auto">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_340px] min-h-0">
+        <div className="p-3 sm:p-6 border-b md:border-b-0 md:border-r border-border overflow-auto">
           {preview}
         </div>
-        <aside className="p-4 sm:p-5 flex flex-col gap-4 bg-card/40 overflow-auto">
+        <aside className="p-3 sm:p-5 flex flex-col gap-4 bg-card/40 overflow-auto md:max-h-[calc(100dvh-9.5rem)]">
           {panel}
         </aside>
       </div>
