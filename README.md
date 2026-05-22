@@ -50,7 +50,6 @@ see [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
 ```bash
 npm test               # vitest, jsdom, fake-indexeddb
-npm run test:e2e       # playwright (chromium)
 ```
 
 ## Tech stack
